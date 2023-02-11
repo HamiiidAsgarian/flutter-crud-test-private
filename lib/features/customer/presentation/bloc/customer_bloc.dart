@@ -6,8 +6,6 @@ part 'customer_state.dart';
 
 class CustomerBloc extends Bloc<CustomerEvent, CustomerState> {
   CustomerBloc() : super(CustomerInitial()) {
-    on<CustomerEvent>((event, emit) {
-      // TODO: implement event handler
-    });
+    on<CustomerEvent>((event, emit) {});
   }
 }
