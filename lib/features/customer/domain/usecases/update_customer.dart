@@ -5,7 +5,7 @@ class UpdateCustomers {
   final DomainApiRepo domainApiRepo;
   UpdateCustomers(this.domainApiRepo);
 
-  void exeute(CustomerEntity customer) {
-    return domainApiRepo.update(customer);
+  void exeute(CustomerEntity customer) async {
+    domainApiRepo.updateCustomer(customer);
   }
 }

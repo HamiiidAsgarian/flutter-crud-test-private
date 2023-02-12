@@ -50,14 +50,25 @@ class SupabaseDataSourceImp implements SupabaseDataSource {
 
   @override
   void addCustomer(CustomerModel customer) async {
-    await supaBaseClient.from('customers').insert({
-      'firstname': customer.firstname,
-      'lastname': customer.lastname,
-      'dateOfBirth': customer.dateOfBirth,
-      'phoneNumber': customer.phoneNumber,
-      'email': customer.email,
-      'bankAccountNumber': customer.bankAccountNumber,
-    });
+    List validation1 = await supaBaseClient.from("customers").select("*").match(
+        {"firstname": customer.firstname, "lastname": customer.lastname});
+
+    List validation2 = await supaBaseClient
+        .from("customers")
+        .select("*")
+        .eq("email", customer.email);
+
+    if (validation1.isNotEmpty || validation2.isNotEmpty) {
+    } else {
+      await supaBaseClient.from('customers').insert({
+        'firstname': customer.firstname,
+        'lastname': customer.lastname,
+        'dateOfBirth': customer.dateOfBirth,
+        'phoneNumber': customer.phoneNumber,
+        'email': customer.email,
+        'bankAccountNumber': customer.bankAccountNumber,
+      });
+    }
   }
 
   @override
@@ -74,7 +85,7 @@ class SupabaseDataSourceImp implements SupabaseDataSource {
       'phoneNumber': customer.phoneNumber,
       'email': customer.email,
       'bankAccountNumber': customer.bankAccountNumber,
-    }).match({'firstname': customer.firstname}).eq('id', customer.id);
+    }).eq('id', customer.id);
   }
 
   @override

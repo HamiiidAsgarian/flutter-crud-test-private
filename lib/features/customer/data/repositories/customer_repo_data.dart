@@ -10,7 +10,7 @@ class ApiRepoImp implements DomainApiRepo {
 
   ApiRepoImp(this.supabaseDataSource);
   @override
-  Stream<List<CustomerEntity>> getUsersStream() {
+  Stream<List<CustomerEntity>> getCustomersStream() {
     return supabaseDataSource.getCustomersStream().map((listOfStreamData) {
       return listOfStreamData
           .map((e) => CustomerEntity(
@@ -26,25 +26,26 @@ class ApiRepoImp implements DomainApiRepo {
   }
 
   @override
-  void addUser(CustomerEntity customer) async {
+  void addCustomer(CustomerEntity customer) {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
+
     supabaseDataSource.addCustomer(_customerModel);
   }
 
   @override
-  void deleteUser(CustomerEntity customer) {
+  void deleteCustomer(CustomerEntity customer) {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
     supabaseDataSource.deleteCustomer(_customerModel);
   }
 
   @override
-  void update(CustomerEntity customer) {
+  void updateCustomer(CustomerEntity customer) {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
     supabaseDataSource.updateCustomer(_customerModel);
   }
 
   @override
-  Future<Either<Failure, CustomerModel>> getUsers() async {
+  Future<Either<Failure, CustomerModel>> getCustomer() async {
     return await Future.delayed(Duration.zero);
   }
 }
@@ -52,12 +53,12 @@ class ApiRepoImp implements DomainApiRepo {
 class ModelEntityMapper {
   static CustomerModel entityToModel(CustomerEntity entity) {
     return CustomerModel(
-        id: entity.id!,
-        firstname: entity.firstname!,
-        lastname: entity.lastname!,
-        dateOfBirth: entity.dateOfBirth!,
-        phoneNumber: entity.phoneNumber!,
-        email: entity.email!,
-        bankAccountNumber: entity.bankAccountNumber!);
+        id: entity.id,
+        firstname: entity.firstname,
+        lastname: entity.lastname,
+        dateOfBirth: entity.dateOfBirth,
+        phoneNumber: entity.phoneNumber,
+        email: entity.email,
+        bankAccountNumber: entity.bankAccountNumber);
   }
 }

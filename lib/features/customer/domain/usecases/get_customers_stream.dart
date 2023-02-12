@@ -6,6 +6,6 @@ class GetCustomersStream {
   GetCustomersStream(this.domainApiRepo);
 
   Stream<List<CustomerEntity>> exeute() {
-    return domainApiRepo.getUsersStream();
+    return domainApiRepo.getCustomersStream();
   }
 }

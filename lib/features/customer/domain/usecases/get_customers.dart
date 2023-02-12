@@ -9,6 +9,6 @@ class GetCustomers {
   GetCustomers(this.apiRepo);
 
   Future<Either<Failure, CustomerEntity>> exeute() {
-    return apiRepo.getUsers();
+    return apiRepo.getCustomer();
   }
 }

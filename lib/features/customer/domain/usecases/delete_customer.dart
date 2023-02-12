@@ -5,7 +5,7 @@ class DeleteCustomers {
   final DomainApiRepo domainApiRepo;
   DeleteCustomers(this.domainApiRepo);
 
-  void exeute(CustomerEntity customer) {
-    return domainApiRepo.deleteUser(customer);
+  Future exeute(CustomerEntity customer) async {
+    domainApiRepo.deleteCustomer(customer);
   }
 }

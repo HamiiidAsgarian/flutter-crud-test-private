@@ -6,6 +6,6 @@ class AddCustomers {
   AddCustomers(this.domainApiRepo);
 
   void exeute(CustomerEntity customer) {
-    return domainApiRepo.addUser(customer);
+    return domainApiRepo.addCustomer(customer);
   }
 }
