@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:mc_crud_test/features/core/consts.dart';
 import 'package:mc_crud_test/features/customer/domain/entities/customer.dart';
 
+import '../../../core/validator.dart';
+
 enum DialogStyle { addCustomer, editCustomer }
 
 class CustomerDataDialog extends StatefulWidget {
@@ -81,12 +83,8 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                         ? widget.defultCustomer!.firstname
                         : null,
                     decoration: const InputDecoration(labelText: 'First Name'),
-                    validator: (value) {
-                      if (value == '' && value != null) {
-                        return 'Please enter first name';
-                      }
-                      return null;
-                    },
+                    validator: (value) =>
+                        Validators.stringInputsValidator(value),
                     onSaved: (value) {
                       value != null ? _firstname = value : () {};
                     },
@@ -97,12 +95,8 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                         ? widget.defultCustomer!.lastname
                         : null,
                     decoration: const InputDecoration(labelText: 'Last Name'),
-                    validator: (value) {
-                      if (value == '') {
-                        return 'Please enter last name';
-                      }
-                      return null;
-                    },
+                    validator: (value) =>
+                        Validators.stringInputsValidator(value),
                     onSaved: (value) {
                       if (value != null || value != "") {
                         _lastname = value!;
@@ -114,15 +108,9 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                     initialValue: widget.dialogStyle == DialogStyle.editCustomer
                         ? widget.defultCustomer!.dateOfBirth
                         : null,
-                    decoration: const InputDecoration(labelText: 'birthday'),
-                    validator: (value) {
-                      if (value == null ||
-                          value == "" ||
-                          !RegExp(r"^[0-9]*$").hasMatch(value.trim())) {
-                        return 'Please enter birthday';
-                      }
-                      return null;
-                    },
+                    decoration: const InputDecoration(
+                        hintText: "dd/mm/yyyy", labelText: 'birthday'),
+                    validator: (value) => Validators.birthDayValidator(value),
                     onSaved: (value) {
                       value != null ? _phoneNumber = value : () {};
                     },
@@ -132,37 +120,21 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                     initialValue: widget.dialogStyle == DialogStyle.editCustomer
                         ? widget.defultCustomer!.phoneNumber
                         : null,
-                    decoration:
-                        const InputDecoration(labelText: 'Phone Number'),
-                    validator: (value) {
-                      if (value == null ||
-                          value == "" ||
-                          !RegExp(r"^[0-9]*$").hasMatch(value.trim())) {
-                        return 'Please enter your birthyear';
-                      }
-                      return null;
-                    },
+                    decoration: const InputDecoration(
+                        hintText: "+98**********", labelText: 'Phone Number'),
+                    validator: (value) =>
+                        Validators.phoneNumberValidator(value),
                     onSaved: (value) {
                       value != null ? _dateOfBirth = value : () {};
                     },
                   ),
-
                   TextFormField(
                     style: TextStyle(color: AppConsts.greyColor1),
                     initialValue: widget.dialogStyle == DialogStyle.editCustomer
                         ? widget.defultCustomer!.email
                         : null,
                     decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) {
-                      if (value == null ||
-                          value == "" ||
-                          !RegExp(r'^.+@[a-zA-Z]+\.{1}[a-zA-Z]+(\.{0,1}[a-zA-Z]+)$')
-                              .hasMatch(value.trim())) {
-                        return "Email is invalid";
-                      } else {
-                        return null;
-                      }
-                    },
+                    validator: (value) => Validators.emailValidator(value),
                     onSaved: (value) {
                       value != null ? _email = value : () {};
                     },
@@ -175,19 +147,12 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                     keyboardType: TextInputType.number,
                     decoration:
                         const InputDecoration(labelText: 'Bank Account Number'),
-                    validator: (value) {
-                      if (value == null ||
-                          value == "" ||
-                          !RegExp(r"^[0-9]*$").hasMatch(value.trim())) {
-                        return 'Please enter bank account number';
-                      }
-                      return null;
-                    },
+                    validator: (value) =>
+                        Validators.bankAccountValidator(value),
                     onSaved: (value) {
                       value != null ? _bankAccountNumber = value : () {};
                     },
                   ),
-                  // InternationalPhoneNumberInput(onInputChanged: (e) {}),
                   const SizedBox(height: 25),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -202,8 +167,6 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
-                              print(
-                                  "$_firstname  $_lastname  $_phoneNumber $_bankAccountNumber $_email");
                               CustomerEntity newCustomer = CustomerEntity(
                                   id: widget.defultCustomer != null
                                       ? widget.defultCustomer!.id

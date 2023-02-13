@@ -32,14 +32,14 @@ class AppConsts {
       ));
 
   SupabaseClient? _client;
-  initDatabase() {
+  Future initDatabase() async {
     String supabaseUrl =
         'https://ssifxdfwgwqnssvexnfk.supabase.co'; //NOTE: must be .env secrets
     String supabaseKey =
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzaWZ4ZGZ3Z3dxbnNzdmV4bmZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzU5NTAyNzgsImV4cCI6MTk5MTUyNjI3OH0.dSe6n3F9ovW3-_vbBJZakfTMdTb5kEp_lHwP9RUWcMk';
 
+    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
     _client = SupabaseClient(supabaseUrl, supabaseKey);
-    Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
   }
 
   SupabaseClient? get client => _client;
