@@ -26,27 +26,42 @@ class ApiRepoImp implements DomainApiRepo {
   }
 
   @override
-  void addCustomer(CustomerEntity customer) {
+  Future<Either<CustomerModel, ServerRespond>> addCustomer(
+      CustomerEntity customer) async {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
 
-    supabaseDataSource.addCustomer(_customerModel);
+    Either<CustomerModel, ServerRespond> serverRes =
+        await supabaseDataSource.addCustomer(_customerModel);
+
+    return serverRes;
   }
 
   @override
-  void deleteCustomer(CustomerEntity customer) {
+  Future<Either<CustomerModel, ServerRespond>> deleteCustomer(
+      CustomerEntity customer) async {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
-    supabaseDataSource.deleteCustomer(_customerModel);
+    Either<CustomerModel, ServerRespond> serverRes =
+        await supabaseDataSource.deleteCustomer(_customerModel);
+
+    return serverRes;
   }
 
   @override
-  void updateCustomer(CustomerEntity customer) {
+  Future<Either<CustomerModel, ServerRespond>> updateCustomer(
+      CustomerEntity customer) async {
     CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
-    supabaseDataSource.updateCustomer(_customerModel);
+    Either<CustomerModel, ServerRespond> serverRes =
+        await supabaseDataSource.updateCustomer(_customerModel);
+    return serverRes;
   }
 
   @override
-  Future<Either<Failure, CustomerModel>> getCustomer() async {
-    return await Future.delayed(Duration.zero);
+  Future<Either<CustomerModel, ServerRespond>> getCustomer(
+      CustomerEntity customer) async {
+    CustomerModel _customerModel = ModelEntityMapper.entityToModel(customer);
+    Either<CustomerModel, ServerRespond> serverRes =
+        await supabaseDataSource.getCustomer(_customerModel);
+    return serverRes;
   }
 }
 

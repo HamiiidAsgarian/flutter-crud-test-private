@@ -8,7 +8,8 @@ class GetCustomers {
   final DomainApiRepo apiRepo;
   GetCustomers(this.apiRepo);
 
-  Future<Either<Failure, CustomerEntity>> exeute() {
-    return apiRepo.getCustomer();
+  Future<Either<CustomerEntity, ServerRespond>> exeute(
+      CustomerEntity customer) async {
+    return apiRepo.addCustomer(customer);
   }
 }

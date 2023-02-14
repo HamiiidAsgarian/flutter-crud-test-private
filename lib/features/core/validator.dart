@@ -2,7 +2,8 @@ class Validators {
   static stringInputsValidator(value) {
     if (value == null ||
         value == "" ||
-        !RegExp(r"^([a-z]+[,.]?[ ]?|[a-z]+['-]?)+$").hasMatch(value.trim())) {
+        !RegExp(r"^([a-zA-Z]+[,.]?[ ]?|[a-zA-Z]+['-]?)+$")
+            .hasMatch(value.trim())) {
       return 'Please enter a valid value';
     }
     return null;

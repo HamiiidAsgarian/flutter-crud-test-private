@@ -1,15 +1,25 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+
+import 'package:dartz/dartz.dart';
+import 'package:mc_crud_test/features/core/error/failures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:mc_crud_test/features/customer/data/models/customer_model.dart';
 
 abstract class SupabaseDataSource {
-  Future<CustomerModel> getCustomer(CustomerModel customer);
-  void addCustomer(CustomerModel customer);
-  void deleteCustomer(CustomerModel customer);
-  void updateCustomer(CustomerModel customer);
-  // Stream<List<Map<String, dynamic>>> getCustomersStream();
   Stream<List<CustomerModel>> getCustomersStream();
+
+  Future<Either<CustomerModel, ServerRespond>> getCustomer(
+      CustomerModel customer);
+
+  Future<Either<CustomerModel, ServerRespond>> addCustomer(
+      CustomerModel customer);
+
+  Future<Either<CustomerModel, ServerRespond>> deleteCustomer(
+      CustomerModel customer);
+
+  Future<Either<CustomerModel, ServerRespond>> updateCustomer(
+      CustomerModel customer);
 }
 
 class SupabaseDataSourceImp implements SupabaseDataSource {
@@ -17,15 +27,10 @@ class SupabaseDataSourceImp implements SupabaseDataSource {
   SupabaseDataSourceImp({
     required this.supaBaseClient,
   });
-  // static String supabaseUrl = 'https://ssifxdfwgwqnssvexnfk.supabase.co';
-  // static String supabaseKey =
-  //     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzaWZ4ZGZ3Z3dxbnNzdmV4bmZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzU5NTAyNzgsImV4cCI6MTk5MTUyNjI3OH0.dSe6n3F9ovW3-_vbBJZakfTMdTb5kEp_lHwP9RUWcMk';
-
-  // final _client = SupabaseClient(supabaseUrl, supabaseKey);
   @override
-  Stream<List<CustomerModel>> getCustomersStream() {
-    // Stream myStream = Stream.fromIterable(elements)
 
+  ///Gets customers stream and turns it into the Customer models
+  Stream<List<CustomerModel>> getCustomersStream() {
     Stream<List<CustomerModel>> modeledStream = supaBaseClient
         .from('customers')
         .stream(primaryKey: ['id']).map((listOfStreamData) {
@@ -39,117 +44,106 @@ class SupabaseDataSourceImp implements SupabaseDataSource {
               email: e['email'],
               bankAccountNumber: e['bankAccountNumber']))
           .toList();
-      // for (var e in listOfStreamData) {
-      //   return
-      // }
     });
-
-    // return supaBaseClient.from('customers').stream(primaryKey: ['id']);
     return modeledStream;
   }
 
   @override
-  void addCustomer(CustomerModel customer) async {
-    List validation1 = await supaBaseClient.from("customers").select("*").match(
-        {"firstname": customer.firstname, "lastname": customer.lastname});
-
-    List validation2 = await supaBaseClient
+  Future<Either<CustomerModel, ServerRespond>> addCustomer(
+      CustomerModel customer) async {
+    List repeatedEmail = await supaBaseClient
         .from("customers")
         .select("*")
         .eq("email", customer.email);
 
-    if (validation1.isNotEmpty || validation2.isNotEmpty) {
+    ///If the email address is already exist, don't bother comparing Fname,Lname and birthday, else get the all three and send the customer model
+    if (repeatedEmail.isNotEmpty) {
+      return right(ServerFailure());
     } else {
-      await supaBaseClient.from('customers').insert({
-        'firstname': customer.firstname,
-        'lastname': customer.lastname,
-        'dateOfBirth': customer.dateOfBirth,
-        'phoneNumber': customer.phoneNumber,
-        'email': customer.email,
-        'bankAccountNumber': customer.bankAccountNumber,
+      List validation1 =
+          await supaBaseClient.from("customers").select("*").match({
+        "firstname": customer.firstname,
+        "lastname": customer.lastname,
+        'dateOfBirth': customer.dateOfBirth
       });
+      if (validation1.isNotEmpty) {
+        return right(ServerFailure());
+      } else {
+        List<Map<String, dynamic>> a =
+            await supaBaseClient.from('customers').insert({
+          'firstname': customer.firstname,
+          'lastname': customer.lastname,
+          'dateOfBirth': customer.dateOfBirth,
+          'phoneNumber': customer.phoneNumber,
+          'email': customer.email,
+          'bankAccountNumber': customer.bankAccountNumber,
+        }).select();
+        CustomerModel customerModel = CustomerModel.fromJson(a.first);
+        return left(customerModel);
+      }
     }
   }
 
   @override
-  void deleteCustomer(CustomerModel customer) async {
-    await supaBaseClient.from('customers').delete().match({'id': customer.id});
+  Future<Either<CustomerModel, ServerRespond>> deleteCustomer(
+      CustomerModel customer) async {
+    try {
+      List<Map<String, dynamic>> deletedCustomer = await supaBaseClient
+          .from('customers')
+          .delete()
+          .match({'id': customer.id}).select();
+
+      CustomerModel customerModel =
+          CustomerModel.fromJson(deletedCustomer.first);
+      return left(customerModel);
+    } catch (e) {
+      return right(ServerFailure());
+    }
   }
 
   @override
-  void updateCustomer(CustomerModel customer) async {
-    await supaBaseClient.from('customers').update({
-      'firstname': customer.firstname,
-      'lastname': customer.lastname,
-      'dateOfBirth': customer.dateOfBirth,
-      'phoneNumber': customer.phoneNumber,
-      'email': customer.email,
-      'bankAccountNumber': customer.bankAccountNumber,
-    }).eq('id', customer.id);
+  Future<Either<CustomerModel, ServerRespond>> updateCustomer(
+      CustomerModel customer) async {
+    try {
+      var updatedCustomer = await supaBaseClient
+          .from('customers')
+          .update({
+            'firstname': customer.firstname,
+            'lastname': customer.lastname,
+            'dateOfBirth': customer.dateOfBirth,
+            'phoneNumber': customer.phoneNumber,
+            'email': customer.email,
+            'bankAccountNumber': customer.bankAccountNumber,
+          })
+          .eq('id', customer.id)
+          .select();
+
+      CustomerModel customerModel =
+          CustomerModel.fromJson(updatedCustomer.first);
+      return left(customerModel);
+    } catch (e) {
+      return right(ServerFailure());
+    }
   }
 
-  @override
-  Future<CustomerModel> getCustomer(CustomerModel customer) async {
-    var fountCustomer = await supaBaseClient
-        .from('customers')
-        .delete()
-        .match({'id': customer.id});
+  ///NOTE: get is never used duo to the exitance of streaming customers data
 
-    CustomerModel res = CustomerModel(
-        id: fountCustomer['id'],
-        firstname: fountCustomer["firstname"],
-        lastname: fountCustomer["lastname"],
-        dateOfBirth: fountCustomer["dateOfBirth"],
-        phoneNumber: fountCustomer["phoneNumber"],
-        email: fountCustomer["email"],
-        bankAccountNumber: fountCustomer["bankAccountNumber"]);
-    return res;
+  @override
+  Future<Either<CustomerModel, ServerRespond>> getCustomer(
+      CustomerModel customer) async {
+    try {
+      var foundCustomer =
+          await supaBaseClient.from("customers").select("*").match({
+        "firstname": customer.firstname,
+        "lastname": customer.lastname,
+        "dateOfBirth": customer.dateOfBirth
+      });
+
+      CustomerModel customerModel = CustomerModel.fromJson(foundCustomer.first);
+
+      return left(customerModel);
+    } catch (e) {
+      return right(ServerFailure());
+    }
   }
 }
-
-//-----------------------------------------
-// class SupabaseDataSource2 {
-//   static String supabaseUrl = 'https://ssifxdfwgwqnssvexnfk.supabase.co';
-//   static String supabaseKey =
-//       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzaWZ4ZGZ3Z3dxbnNzdmV4bmZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NzU5NTAyNzgsImV4cCI6MTk5MTUyNjI3OH0.dSe6n3F9ovW3-_vbBJZakfTMdTb5kEp_lHwP9RUWcMk';
-
-//   final _client = SupabaseClient(supabaseUrl, supabaseKey);
-
-//   addData(CustomerEntity customer) async {
-//     var res = await _client.from('customers').insert({
-//       'firstname': customer.firstname,
-//       'lastname': customer.lastname,
-//       'dateOfBirth': customer.dateOfBirth,
-//       'phoneNumber': customer.phoneNumber,
-//       'email': customer.email,
-//       'bankAccountNumber': customer.bankAccountNumber,
-//     });
-
-//     print(res);
-//   }
-
-//   read(CustomerEntity customer) async {
-//     var res =
-//         await _client.from('customers').select().order('id', ascending: true);
-
-//     final List dataList = res.data as List;
-//     print(res);
-//   }
-
-//   update(CustomerEntity customer) async {
-//     var res = await _client.from('customers').update({
-//       'firstname': customer.firstname,
-//       'lastname': customer.lastname,
-//       'dateOfBirth': customer.dateOfBirth,
-//       'phoneNumber': customer.phoneNumber,
-//       'email': customer.email,
-//       'bankAccountNumber': customer.bankAccountNumber,
-//     }).match({'firstname': customer.firstname}).eq('id', customer.id);
-
-//     print(res);
-//   }
-
-//   delete(CustomerEntity customer) async {
-//     await _client.from('customers').delete().match({'id': customer.id});
-//   }
-// }

@@ -112,7 +112,7 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                         hintText: "dd/mm/yyyy", labelText: 'birthday'),
                     validator: (value) => Validators.birthDayValidator(value),
                     onSaved: (value) {
-                      value != null ? _phoneNumber = value : () {};
+                      value != null ? _dateOfBirth = value : () {};
                     },
                   ),
                   TextFormField(
@@ -125,7 +125,7 @@ class _CustomerDataDialogState extends State<CustomerDataDialog> {
                     validator: (value) =>
                         Validators.phoneNumberValidator(value),
                     onSaved: (value) {
-                      value != null ? _dateOfBirth = value : () {};
+                      value != null ? _phoneNumber = value : () {};
                     },
                   ),
                   TextFormField(

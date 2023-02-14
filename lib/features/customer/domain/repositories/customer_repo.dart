@@ -5,8 +5,16 @@ import 'package:dartz/dartz.dart';
 
 abstract class DomainApiRepo {
   Stream<List<CustomerEntity>> getCustomersStream();
-  Future<Either<Failure, CustomerEntity>> getCustomer();
-  void addCustomer(CustomerEntity customer);
-  void deleteCustomer(CustomerEntity customer);
-  void updateCustomer(CustomerEntity customer);
+
+  Future<Either<CustomerEntity, ServerRespond>> getCustomer(
+      CustomerEntity customer);
+
+  Future<Either<CustomerEntity, ServerRespond>> addCustomer(
+      CustomerEntity customer);
+
+  Future<Either<CustomerEntity, ServerRespond>> deleteCustomer(
+      CustomerEntity customer);
+
+  Future<Either<CustomerEntity, ServerRespond>> updateCustomer(
+      CustomerEntity customer);
 }

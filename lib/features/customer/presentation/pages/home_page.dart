@@ -25,7 +25,7 @@ class _MainPageState extends State<MainPage> {
   late final SupabaseClient _client;
   @override
   void initState() {
-    ///Getting  database client from singleton class AppConsts
+    ///Getting  database client from AppConsts
     _client = AppConsts().client!;
     super.initState();
   }
@@ -34,20 +34,7 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return CustomerDataDialog(
-                    dialogStyle: DialogStyle.addCustomer,
-                    onAdmit: (newCustomer) {
-                      AddCustomers(ApiRepoImp(
-                              SupabaseDataSourceImp(supaBaseClient: _client)))
-                          .exeute(newCustomer);
-                    },
-                  );
-                });
-          },
+          onPressed: onPressAddCustomer,
           child: const Icon(Icons.add_outlined),
         ),
         appBar: AppBar(title: const Text("Home Screen")),
@@ -67,28 +54,10 @@ class _MainPageState extends State<MainPage> {
                       List<CustomerEntity> customers = snapshot.data!;
                       return CustomersTableList(
                         customers: customers,
-                        onPressDelete: (customerIndex) {
-                          ///Delete customer through DeleteUsecase
-                          DeleteCustomers(ApiRepoImp(SupabaseDataSourceImp(
-                                  supaBaseClient: _client)))
-                              .exeute(customers[customerIndex]);
-                        },
-                        onPressEdit: (int customerIndex) {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return CustomerDataDialog(
-                                  dialogStyle: DialogStyle.editCustomer,
-                                  defultCustomer: customers[customerIndex],
-                                  onAdmit: (newCustomer) {
-                                    UpdateCustomers(ApiRepoImp(
-                                            SupabaseDataSourceImp(
-                                                supaBaseClient: _client)))
-                                        .exeute(newCustomer);
-                                  },
-                                );
-                              });
-                        },
+                        onPressDelete: (customerIndex) => onPressDeleteCustomer(
+                            selectedCustomer: customers[customerIndex]),
+                        onPressEdit: (customerIndex) => onPressEditCustomer(
+                            customers: customers[customerIndex]),
                         onPressInfo: (int customerIndex) {
                           showDialog(
                               context: context,
@@ -106,5 +75,91 @@ class _MainPageState extends State<MainPage> {
         ));
   }
 
-  onPressInfo() {}
+  onPressDeleteCustomer({required CustomerEntity selectedCustomer}) async {
+    await DeleteCustomers(
+            ApiRepoImp(SupabaseDataSourceImp(supaBaseClient: _client)))
+        .exeute(selectedCustomer)
+        .then((res) async {
+      res.fold((customerEntity) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: AppConsts.mainGreenColor,
+          content: Text(
+              "✔ ${customerEntity.firstname!.toUpperCase()} ${customerEntity.lastname!.toUpperCase()} has been deleted successfully"),
+          duration: const Duration(seconds: 3),
+        ));
+        // Navigator.pop(context);
+      }, (serverRespond) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: AppConsts.mainRedColor,
+          content: const Text("❌ Operation error,Unsuccessful"),
+          duration: const Duration(seconds: 3),
+        ));
+      });
+    });
+  }
+
+  onPressAddCustomer() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return CustomerDataDialog(
+            dialogStyle: DialogStyle.addCustomer,
+            onAdmit: (newCustomer) async {
+              await AddCustomers(ApiRepoImp(
+                      SupabaseDataSourceImp(supaBaseClient: _client)))
+                  .exeute(newCustomer)
+                  .then((res) async {
+                res.fold((customerEntity) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: AppConsts.mainGreenColor,
+                    content: Text(
+                        "✔ ${customerEntity.firstname!.toUpperCase()} ${customerEntity.lastname!.toUpperCase()} has been created successfully"),
+                    duration: const Duration(seconds: 3),
+                  ));
+                  // Navigator.pop(context);
+                }, (serverRespond) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: AppConsts.mainRedColor,
+                    content: const Text("❌ Operation error,Unsuccessful"),
+                    duration: const Duration(seconds: 3),
+                  ));
+                });
+              });
+            },
+          );
+        });
+  }
+
+  onPressEditCustomer({required CustomerEntity customers}) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return CustomerDataDialog(
+            dialogStyle: DialogStyle.editCustomer,
+            defultCustomer: customers,
+            onAdmit: (newCustomer) async {
+              await UpdateCustomers(ApiRepoImp(
+                      SupabaseDataSourceImp(supaBaseClient: _client)))
+                  .exeute(newCustomer)
+                  .then((res) async {
+                res.fold((customerEntity) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: AppConsts.mainGreenColor,
+                    content: Text(
+                        "✔ ${customerEntity.firstname!.toUpperCase()} ${customerEntity.lastname!.toUpperCase()} has been updated successfully"),
+                    duration: const Duration(seconds: 3),
+                  ));
+                  // Navigator.pop(context);
+                }, (serverRespond) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    backgroundColor: AppConsts.mainRedColor,
+                    content: const Text("❌ Operation error,Unsuccessful"),
+                    duration: const Duration(seconds: 3),
+                  ));
+                });
+              });
+            },
+          );
+        });
+  }
 }
