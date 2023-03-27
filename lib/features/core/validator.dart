@@ -7,6 +7,7 @@ class Validators {
       return 'Please enter a valid value';
     }
     return null;
+    
   }
 
   static birthDayValidator(value) {
